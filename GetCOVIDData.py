@@ -96,15 +96,18 @@ def get_delta_df(data):
     return data.diff().iloc[1:,:]
 
 
-# Get a nice df of the values of cases at a specified date, two weeks before, two weeks after
+# Get a df of the values of cases at a specified date, two weeks before, two weeks after
 def get_two_weeks(data, date = dt.datetime.today().strftime("%m/%d/%Y")):
     '''
-    Get the rows of data from the given DataFrame for the date specified, the
+    Get the values of data from the given DataFrame for the date specified, the
     date two weeks before, and the date two weeks after. This is to help see
     changes in cases that may be caused by events or legislation. Due to the
     nature of the COVID-19 disease, impacts of these events are not visible
     immediately in the numbers. Those infected may take up to two weeks to show
-    symptoms. If data not available for the dates, will print a message.
+    symptoms. If data not available for the dates, a message will be printed.
+    In the resulting DataFrame, the values of the next day and the day previous 
+    have been averaged together. This is to help combat the high daily 
+    fluctuation seen in the data.
 
     Parameters
     ----------
@@ -118,28 +121,40 @@ def get_two_weeks(data, date = dt.datetime.today().strftime("%m/%d/%Y")):
     -------
     df : Pandas DataFrame object
         Returns a DataFrame object with at most 3 rows from the given DataFrame.
-        These rows will consist of data from the date two weeks before the one
-        specified, the date specified, and the date two weeks after the one specified.
+        These rows will consist of data averaged from the date two weeks before 
+        the one specified plus and minus a day, the averaged data for date specified
+        plus or minus a day, and the averaged data for the date two weeks after the 
+        one specified plus and minus a day.
 
     '''
     date = dt.datetime.strptime(date, '%m/%d/%Y')
     # Calculate and format the dates
     two_weeks = dt.timedelta(14)
+    one_day = dt.timedelta(1)
+    
     date_before = date - two_weeks
     date_after = date + two_weeks
     
-    dt_objects = [date_before, date, date_after]
-    dates = []
-    for dt_obj in dt_objects:
-        dates.append(dt_obj.strftime("%m-%d-%Y"))
+    dates_before = [date_before - one_day, date_before, date_before + one_day]
+    dates_interest = [date - one_day, date, date + one_day]
+    dates_after = [date_after - one_day, date_after, date_after + one_day]
+    
+    dates = [dates_before, dates_interest, dates_after]
+    
+    for collection in dates:
+    	for i, dt_obj in enumerate(collection):
+    		collection[i] = dt_obj.strftime("%m-%d-%Y")
     
     # Get the appropriate rows if they exist
     df = pd.DataFrame()
-    for i in dates:
+    new_index = []
+    for collection in dates:
         try:
-            df = df.append(data.loc[i])
+            df = df.append(data.loc[collection,].mean(),ignore_index = True)
+            new_index.append(str(collection[1]))
         except:
-            print("No data available for {}".format(i))
-            
+            print("Insufficient data for {}".format(collection[1]))
+    df.index = new_index
+    df.index.name = 'Values Averaged Around Day'
     return df
 
