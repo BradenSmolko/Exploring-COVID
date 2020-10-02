@@ -9,4 +9,4 @@ The get_COVID_df() function is used to scrape the csv files from the repository 
 
 The get_delta_df() function returns a new DataFrame containing the differences between the rows of the given DataFrame. This will be helpful for looking at daily changes.
 
-The get_two_weeks() function returns a new DataFrame containing data for a specific date as well as data for the dates two weeks before and two weeks after. This will be helpful when looking at trends before and after legislation and actions are taken by a state.
+The get_two_weeks() function returns a new DataFrame containing averaged data for a specific date (+- one day) as well as data for the dates two weeks before (+- one day) and two weeks after (+- one day). This will be helpful when looking at trends before and after legislation and actions are taken by a state. Averaged values are used to hopefully help combat one-day spikes and lulls in the data.
